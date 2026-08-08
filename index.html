@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Бронирование ПК — MosGame</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    /* ===== Стили (полностью скопированы с вашего сайта) ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #0A0A0A; color: #fff; min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
+    :root {
+      --accent: #D90429;
+      --accent-hover: #B0021F;
+      --dark: #0A0A0A;
+      --glass-bg: rgba(255,255,255,0.05);
+      --glass-border: rgba(255,255,255,0.08);
+      --text-muted: rgba(255,255,255,0.7);
+      --font-display: 'Orbitron', sans-serif;
+    }
+
+    /* ===== НАВИГАЦИЯ ===== */
+    .navbar {
+      position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+      padding: 0 40px; height: 80px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: transparent; transition: all 0.3s ease;
+    }
+    .navbar.scrolled {
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(12px);
+      height: 64px;
+    }
+    .nav-logo { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: #fff; }
+    .nav-logo span { color: var(--accent); }
+    .nav-links {
+      display: flex; align-items: center; gap: 32px; list-style: none; font-size: 14px;
+    }
+    .nav-links a {
+      color: rgba(255,255,255,0.8); transition: color 0.3s; position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 0; height: 2px; background: var(--accent);
+      transition: width 0.35s ease;
+    }
+    .nav-links a:hover { color: #fff; }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta {
+      background: var(--accent); color: #fff; padding: 10px 22px;
+      border-radius: 6px; font-weight: 700; transition: background 0.3s;
+    }
+    .nav-cta:hover { background: var(--accent-hover); }
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      cursor: pointer; background: none; border: none; padding: 6px;
+    }
+    .hamburger span {
+      display: block; width: 26px; height: 2px; background: #fff;
+      transition: all 0.3s ease;
+    }
+    .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px,5px); }
+    .hamburger.active span:nth-child(2) { opacity: 0; }
+    .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px,-5px); }
+    .mobile-menu {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+      background: rgba(10,10,10,0.98); backdrop-filter: blur(16px);
+      z-index: 999; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 32px;
+      opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+    }
+    .mobile-menu.open { opacity: 1; pointer-events: all; }
+    .mobile-menu a { font-family: var(--font-display); font-size: 28px; color: #fff; font-weight: 700; }
+    .mobile-menu a:hover { color: var(--accent); }
+
+    /* ===== ГЕРОЙ ===== */
+    .hero {
+      min-height: 100vh; display: flex; align-items: center;
+      padding: 120px 40px 60px;
+      background: linear-gradient(135deg, #0A0A0A, #1A1A1A);
+    }
+    .hero-inner {
+      max-width: 1280px; margin: 0 auto; width: 100%;
+      display: grid; grid-template-columns: 55% 45%; gap: 40px; align-items: center;
+    }
+    .hero-left { display: flex; flex-direction: column; gap: 16px; }
+    .hero-label {
+      font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--accent); font-weight: 600;
+    }
+    .hero-headline {
+      font-family: var(--font-display); font-size: 72px; font-weight: 900; line-height: 1.1;
+    }
+    .hero-sub {
+      font-size: 20px; color: rgba(255,255,255,0.85); line-height: 1.6; max-width: 500px;
+    }
+    .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
+    .btn-primary, .btn-secondary {
+      padding: 14px 28px; border-radius: 6px; font-size: 16px; font-weight: 700;
+      border: none; cursor: pointer; transition: all 0.3s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary {
+      background: transparent; color: #fff; border: 2px solid rgba(255,255,255,0.5);
+    }
+    .btn-secondary:hover { border-color: #fff; background: rgba(255,255,255,0.05); }
+    .hero-trust {
+      font-size: 13px; color: rgba(255,255,255,0.65); margin-top: 8px;
+    }
+    .hero-trust i { color: var(--accent); margin-right: 4px; }
+    .hero-right-img {
+      width: 100%; aspect-ratio: 4/3; object-fit: cover;
+      border-radius: 0 24px 24px 0; clip-path: polygon(8% 0%, 100% 0%, 100% 100%, 0% 100%);
+      background: linear-gradient(135deg, #0A0A0A, #1A1A1A);
+    }
+
+    /* ===== БЛОК БРОНИРОВАНИЯ ===== */
+    .booking-section {
+      background: #0A0A0A;
+      padding: 80px 40px 100px;
+    }
+    .booking-header {
+      max-width: 1280px; margin: 0 auto 60px; text-align: center;
+    }
+    .booking-header .label {
+      font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--accent); font-weight: 600;
+    }
+    .booking-header h2 {
+      font-family: var(--font-display); font-size: 52px; font-weight: 900; color: #fff;
+      margin-top: 6px;
+    }
+    .booking-container {
+      max-width: 1280px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 60px;
+    }
+
+    /* Список ПК */
+    .pc-list {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+    }
+    .pc-card {
+      background: var(--glass-bg); border: 2px solid var(--glass-border);
+      border-radius: 12px; padding: 20px; text-align: center;
+      transition: all 0.3s ease; cursor: pointer; color: #fff;
+    }
+    .pc-card:hover { border-color: var(--accent); }
+    .pc-card.selected {
+      border-color: var(--accent); background: rgba(217,4,41,0.1);
+      box-shadow: 0 0 20px rgba(217,4,41,0.3);
+    }
+    .pc-card .pc-number {
+      font-family: var(--font-display); font-size: 28px; font-weight: 900; color: var(--accent);
+    }
+    .pc-card .pc-spec { font-size: 14px; color: var(--text-muted); margin-top: 6px; }
+    .pc-card .pc-price { font-size: 18px; font-weight: 700; margin-top: 8px; }
+    .pc-card .pc-status {
+      display: inline-block; padding: 4px 14px; border-radius: 20px;
+      font-size: 12px; font-weight: 600; margin-top: 8px;
+    }
+    .pc-card .status-free { background: #2ECC71; color: #0A0A0A; }
+    .pc-card .status-busy { background: #E74C3C; color: #fff; }
+    .pc-card .status-booked { background: #F39C12; color: #fff; }
+    .pc-card.disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .loading-overlay {
+      grid-column: 1 / -1; text-align: center; padding: 40px 0;
+    }
+    .loading-overlay i { font-size: 32px; color: var(--accent); animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .legend {
+      margin-top: 16px; text-align: center; color: var(--text-muted); font-size: 14px;
+    }
+    .legend i { margin: 0 4px; }
+    .legend .free { color: #2ECC71; }
+    .legend .busy { color: #E74C3C; }
+    .legend .booked { color: #F39C12; }
+
+    /* Форма бронирования */
+    .booking-form {
+      background: var(--glass-bg); border: 1px solid var(--glass-border);
+      border-radius: 16px; padding: 32px; backdrop-filter: blur(12px);
+    }
+    .booking-form h3 {
+      font-family: var(--font-display); font-size: 24px; font-weight: 700; color: #fff;
+      margin-bottom: 20px;
+    }
+    .booking-form .form-group { margin-bottom: 20px; }
+    .booking-form label {
+      display: block; font-size: 14px; font-weight: 600; color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .booking-form input, .booking-form select {
+      width: 100%; padding: 12px 16px; border-radius: 8px;
+      border: 1px solid var(--glass-border);
+      background: rgba(255,255,255,0.05); color: #fff; font-size: 16px;
+      transition: border 0.3s;
+    }
+    .booking-form input:focus { outline: none; border-color: var(--accent); }
+    .booking-form input[type="datetime-local"] { color-scheme: dark; }
+    .booking-form .selected-pc-info {
+      background: rgba(217,4,41,0.1); border-left: 3px solid var(--accent);
+      padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; font-size: 16px;
+    }
+    .booking-form .selected-pc-info strong { color: var(--accent); }
+    .booking-form .btn-primary {
+      width: 100%; justify-content: center; padding: 14px; font-size: 18px;
+    }
+    .booking-form .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Оплата */
+    .payment-modal {
+      display: none; margin-top: 20px; padding: 20px;
+      background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid var(--accent);
+    }
+    .payment-modal.active { display: block; }
+    .payment-modal .total {
+      font-size: 24px; font-weight: 700; color: #fff;
+      text-align: center; margin: 16px 0;
+    }
+    .payment-modal .total span { color: var(--accent); }
+    .payment-modal .pay-btn {
+      width: 100%; padding: 14px; background: #2ECC71; color: #0A0A0A;
+      border: none; border-radius: 8px; font-size: 18px; font-weight: 700;
+      cursor: pointer; transition: background 0.3s;
+    }
+    .payment-modal .pay-btn:hover { background: #27AE60; }
+    .payment-modal .pay-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .success-msg {
+      text-align: center; padding: 40px 0; display: none;
+    }
+    .success-msg i { font-size: 60px; color: #2ECC71; }
+    .success-msg h4 { font-family: var(--font-display); font-size: 28px; margin: 16px 0 8px; }
+    .success-msg p { color: var(--text-muted); }
+
+    /* ===== КОНТАКТЫ ===== */
+    .contact-section {
+      padding: 80px 40px 100px; background: #0A0A0A; text-align: center;
+    }
+    .contact-section h2 { font-family: var(--font-display); font-size: 34px; margin-bottom: 16px; }
+    .contact-section p { color: var(--text-muted); font-size: 18px; max-width: 600px; margin: 0 auto; }
+    .contact-section .contact-item { margin-top: 12px; color: #fff; font-size: 18px; }
+    .contact-section .contact-item i { color: var(--accent); margin-right: 8px; }
+
+    /* ===== ФУТЕР ===== */
+    .footer {
+      background: #0A0A0A; border-top: 3px solid var(--accent);
+      padding: 64px 40px 32px; margin-top: auto;
+    }
+    .footer-grid {
+      max-width: 1280px; margin: 0 auto;
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px;
+    }
+    .footer-brand .name {
+      font-family: var(--font-display); font-size: 24px; font-weight: 900; color: #fff;
+    }
+    .footer-brand .name span { color: var(--accent); }
+    .footer-social { display: flex; gap: 16px; margin-top: 12px; }
+    .footer-social a { font-size: 20px; color: rgba(255,255,255,0.6); transition: color 0.3s; }
+    .footer-social a:hover { color: var(--accent); }
+    .footer-col h4 {
+      font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--accent); margin-bottom: 16px;
+    }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-col ul a { font-size: 14px; color: rgba(255,255,255,0.7); transition: color 0.3s; }
+    .footer-col ul a:hover { color: #fff; }
+    .footer-bottom {
+      max-width: 1280px; margin: 24px auto 0; text-align: center;
+      font-size: 13px; color: rgba(255,255,255,0.3);
+      border-top: 1px solid rgba(255,255,255,0.06); padding-top: 24px;
+    }
+
+    /* ===== КНОПКА ЗВОНКА ===== */
+    .call-btn {
+      position: fixed; bottom: 20px; right: 20px; z-index: 9999;
+      width: 58px; height: 58px; border-radius: 50%;
+      background: var(--accent); color: #fff; border: none; font-size: 22px;
+      box-shadow: 0 4px 20px rgba(217,4,41,0.3);
+      cursor: pointer; animation: callPulse 2.5s ease infinite;
+      display: flex; align-items: center; justify-content: center;
+    }
+    @keyframes callPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(217,4,41,0.3); }
+      50% { box-shadow: 0 0 0 12px rgba(217,4,41,0); }
+    }
+    .call-btn .tooltip {
+      position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%);
+      background: #0A0A0A; color: #fff; padding: 6px 14px; border-radius: 6px;
+      font-size: 13px; font-weight: 600; white-space: nowrap;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .call-btn .tooltip::after {
+      content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+      border: 6px solid transparent; border-top-color: #0A0A0A;
+    }
+    .call-btn:hover .tooltip { opacity: 1; }
+
+    /* ===== АДАПТИВ ===== */
+    @media (max-width: 1024px) {
+      .hero-inner { grid-template-columns: 1fr; text-align: center; }
+      .hero-right { display: none; }
+      .hero-headline { font-size: 52px; }
+      .booking-container { grid-template-columns: 1fr; }
+      .pc-list { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .navbar { padding: 0 20px; }
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .hero-headline { font-size: 42px; }
+      .hero { padding: 100px 20px 40px; }
+      .booking-section { padding: 60px 20px; }
+      .booking-header h2 { font-size: 34px; }
+      .pc-list { grid-template-columns: 1fr 1fr; }
+      .footer-grid { grid-template-columns: 1fr; gap: 30px; }
+    }
+    @media (max-width: 480px) {
+      .pc-list { grid-template-columns: 1fr; }
+      .hero-headline { font-size: 32px; }
+      .hero-buttons .btn-primary,
+      .hero-buttons .btn-secondary { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== НАВИГАЦИЯ ===== -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-logo">MOS<span>GAME</span></div>
+    <ul class="nav-links">
+      <li><a href="#booking">Бронирование</a></li>
+      <li><a href="#contact">Контакты</a></li>
+      <li><a href="#booking" class="nav-cta">Забронировать</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#booking">Бронирование</a>
+    <a href="#contact">Контакты</a>
+    <a href="#booking" style="color:var(--accent);">Забронировать</a>
+  </div>
+
+  <!-- ===== ГЕРОЙ ===== -->
+  <section class="hero" id="home">
+    <div class="hero-inner">
+      <div class="hero-left">
+        <div class="hero-label">Компьютерный клуб MosGame</div>
+        <h1 class="hero-headline">Бронируй ПК онлайн</h1>
+        <p class="hero-sub">Выберите свободный компьютер, укажите время — и место за вами.</p>
+        <div class="hero-buttons">
+          <a href="#booking" class="btn-primary"><i class="fas fa-calendar-check"></i> Перейти к бронированию</a>
+        </div>
+        <div class="hero-trust">
+          <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+          4.9 · 200+ геймеров
+        </div>
+      </div>
+      <div class="hero-right">
+        <img class="hero-right-img" src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=900&q=80" alt="Игровой клуб" loading="lazy" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== БЛОК БРОНИРОВАНИЯ ===== -->
+  <section class="booking-section" id="booking">
+    <div class="booking-header">
+      <div class="label">Онлайн-бронирование</div>
+      <h2>Выбери свой ПК</h2>
+    </div>
+    <div class="booking-container">
+      <!-- Левая колонка: список ПК -->
+      <div>
+        <div class="pc-list" id="pcList">
+          <div class="loading-overlay" id="loadingPc">
+            <i class="fas fa-spinner"></i>
+            <span style="display:block; margin-top:8px;">Загрузка компьютеров...</span>
+          </div>
+        </div>
+        <div class="legend">
+          <i class="fas fa-circle free"></i> Свободен &nbsp;
+          <i class="fas fa-circle busy"></i> Занят &nbsp;
+          <i class="fas fa-circle booked"></i> Забронирован
+        </div>
+      </div>
+
+      <!-- Правая колонка: форма бронирования -->
+      <div class="booking-form" id="bookingForm">
+        <h3>Забронировать</h3>
+        <div class="selected-pc-info" id="selectedPcInfo">
+          <span style="color: var(--text-muted);">Выберите ПК из списка слева</span>
+        </div>
+
+        <div class="form-group">
+          <label for="customerName">Ваше имя</label>
+          <input type="text" id="customerName" placeholder="Иван Иванов" />
+        </div>
+        <div class="form-group">
+          <label for="customerPhone">Телефон</label>
+          <input type="tel" id="customerPhone" placeholder="+7 999 123-45-67" />
+        </div>
+        <div class="form-group">
+          <label for="bookingDatetime">Дата и время начала</label>
+          <input type="datetime-local" id="bookingDatetime" />
+        </div>
+        <div class="form-group">
+          <label for="bookingDuration">Продолжительность (часов)</label>
+          <input type="number" id="bookingDuration" placeholder="2" min="1" step="1" />
+        </div>
+
+        <button class="btn-primary" id="bookBtn" disabled>
+          <i class="fas fa-check"></i> Забронировать
+        </button>
+
+        <!-- Блок оплаты -->
+        <div class="payment-modal" id="paymentModal">
+          <h4 style="color: #fff; text-align: center;">Подтверждение бронирования</h4>
+          <div class="total">Итого: <span id="totalPrice">0</span> ₽</div>
+          <button class="pay-btn" id="payBtn">
+            <i class="fas fa-credit-card"></i> Оплатить
+          </button>
+          <p style="color: var(--text-muted); font-size: 14px; margin-top: 12px; text-align: center;">
+            * Здесь будет интеграция с платёжной системой
+          </p>
+        </div>
+
+        <!-- Сообщение об успехе -->
+        <div class="success-msg" id="successMsg">
+          <i class="fas fa-check-circle"></i>
+          <h4>Бронь подтверждена!</h4>
+          <p>Вы успешно забронировали ПК. Ждём вас в клубе!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== КОНТАКТЫ ===== -->
+  <section class="contact-section" id="contact">
+    <h2>Свяжись с нами</h2>
+    <p>Москва, Новомосковский АО, р-н Коммунарка, пос. Воскресенское, 40, корп. 1</p>
+    <div class="contact-item"><i class="fas fa-phone-alt"></i> +7 (495) 123-45-67</div>
+    <div class="contact-item"><i class="fas fa-envelope"></i> info@mosgame.ru</div>
+    <div class="contact-item" style="margin-top:8px;"><i class="fas fa-clock"></i> Пн–Вс: 10:00 – 02:00</div>
+  </section>
+
+  <!-- ===== ФУТЕР ===== -->
+  <footer class="footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="name">MOS<span>GAME</span></div>
+        <div class="footer-social">
+          <a href="#"><i class="fab fa-vk"></i></a>
+          <a href="#"><i class="fab fa-telegram"></i></a>
+          <a href="#"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Услуги</h4>
+        <ul>
+          <li><a href="#booking">Игровые ПК</a></li>
+          <li><a href="#booking">Киберспорт</a></li>
+          <li><a href="#booking">VR-зона</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Контакты</h4>
+        <ul>
+          <li><span><i class="fas fa-phone-alt" style="color:var(--accent);"></i> +7 (495) 123-45-67</span></li>
+          <li><span><i class="fas fa-envelope" style="color:var(--accent);"></i> info@mosgame.ru</span></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Компания</h4>
+        <ul>
+          <li><a href="#booking">Бронирование</a></li>
+          <li><a href="#contact">Контакты</a></li>
+          <li><a href="#">Политика</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2025 MosGame. Все права защищены.</div>
+  </footer>
+
+  <!-- ===== КНОПКА ЗВОНКА ===== -->
+  <a href="tel:+74951234567" class="call-btn" aria-label="Позвонить">
+    <i class="fas fa-phone-alt"></i>
+    <span class="tooltip">Позвонить</span>
+  </a>
+
+  <!-- ============================ -->
+  <!-- СКРИПТЫ                     -->
+  <!-- ============================ -->
+  <script>
+    (function() {
+      'use strict';
+
+      // ============================================================
+      // 1. КОНФИГУРАЦИЯ LANGAME API (ЗАМЕНИТЕ НА СВОИ ДАННЫЕ)
+      // ============================================================
+      const LANGAME_CONFIG = {
+        // Базовый URL вашего API Langame (предоставляется поддержкой)
+        baseUrl: 'https://ваш-домен.langame.ru/api',
+        // API-ключ (выдаётся в личном кабинете или поддержкой)
+        apiKey: 'ваш_api_ключ',
+        // ID вашего клуба в системе Langame
+        clubId: 'ваш_id_клуба',
+        // Эндпоинты (уточните в документации Langame)
+        endpoints: {
+          // Получение списка ПК с их статусами
+          getPcList: '/pc/list',
+          // Создание брони
+          createBooking: '/booking/create',
+          // Инициация оплаты (если используете Finik)
+          initPayment: '/payment/init'
+        }
+      };
+
+      // ============================================================
+      // 2. ЭЛЕМЕНТЫ DOM
+      // ============================================================
+      const pcListEl = document.getElementById('pcList');
+      const loadingPc = document.getElementById('loadingPc');
+      const selectedPcInfo = document.getElementById('selectedPcInfo');
+      const customerName = document.getElementById('customerName');
+      const customerPhone = document.getElementById('customerPhone');
+      const bookingDatetime = document.getElementById('bookingDatetime');
+      const bookingDuration = document.getElementById('bookingDuration');
+      const bookBtn = document.getElementById('bookBtn');
+      const paymentModal = document.getElementById('paymentModal');
+      const totalPriceSpan = document.getElementById('totalPrice');
+      const payBtn = document.getElementById('payBtn');
+      const successMsg = document.getElementById('successMsg');
+
+      let selectedPcId = null;
+      let selectedPcData = null;
+      let currentBookingId = null;
+      let isBookingInProgress = false;
+
+      // ============================================================
+      // 3. НАСТРОЙКА ДАТ (только сегодня и завтра)
+      // ============================================================
+      function setDateLimits() {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const minDate = today.toISOString().slice(0, 16);
+        const maxDate = new Date(tomorrow);
+        maxDate.setHours(23, 59);
+        const maxStr = maxDate.toISOString().slice(0, 16);
+
+        bookingDatetime.min = minDate;
+        bookingDatetime.max = maxStr;
+
+        // Значение по умолчанию – ближайший час
+        const defaultDate = new Date(now);
+        defaultDate.setMinutes(0);
+        defaultDate.setSeconds(0);
+        if (defaultDate < today) defaultDate.setTime(today.getTime());
+        if (defaultDate > tomorrow) defaultDate.setTime(tomorrow.getTime());
+        bookingDatetime.value = defaultDate.toISOString().slice(0, 16);
+      }
+
+      // ============================================================
+      // 4. ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ЗАПРОСОВ К API
+      // ============================================================
+      async function callLangame(endpoint, method = 'GET', body = null) {
+        const url = LANGAME_CONFIG.baseUrl + endpoint;
+        const headers = {
+          'Authorization': 'Bearer ' + LANGAME_CONFIG.apiKey,
+          'Content-Type': 'application/json',
+          'X-Club-ID': LANGAME_CONFIG.clubId
+        };
+
+        const options = {
+          method: method,
+          headers: headers,
+        };
+        if (body) {
+          options.body = JSON.stringify(body);
+        }
+
+        try {
+          const response = await fetch(url, options);
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.message || 'Ошибка API');
+          }
+          return data;
+        } catch (error) {
+          console.error('Ошибка запроса к Langame:', error);
+          throw error;
+        }
+      }
+
+      // ============================================================
+      // 5. ЗАГРУЗКА СПИСКА ПК ИЗ LANGAME
+      // ============================================================
+      async function fetchPcList() {
+        try {
+          // Реальный запрос к Langame
+          const data = await callLangame(LANGAME_CONFIG.endpoints.getPcList);
+          // Ожидаем, что API вернёт массив ПК в формате:
+          // [{ id, name, spec, pricePerHour, status }]
+          // status: 'free', 'busy', 'booked'
+          return data.pcs || data.list || data;
+        } catch (error) {
+          console.error('Ошибка загрузки ПК:', error);
+          // === ДЕМО-ДАННЫЕ (удалите после подключения реального API) ===
+          return [{
+            id: 1,
+            spec: 'RTX 4080, i9, 32GB',
+            pricePerHour: 210,
+            status: 'free'
+          }, {
+            id: 2,
+            spec: 'RTX 4080, i9, 32GB',
+            pricePerHour: 210,
+            status: 'free'
+          }, {
+            id: 3,
+            spec: 'RTX 4070, i7, 16GB',
+            pricePerHour: 190,
+            status: 'busy'
+          }, {
+            id: 4,
+            spec: 'RTX 4070, i7, 16GB',
+            pricePerHour: 190,
+            status: 'free'
+          }, {
+            id: 5,
+            spec: 'RTX 4060, i5, 16GB',
+            pricePerHour: 160,
+            status: 'booked'
+          }, {
+            id: 6,
+            spec: 'RTX 4060, i5, 16GB',
+            pricePerHour: 160,
+            status: 'free'
+          }];
+          // =========================================================
+        }
+      }
+
+      // ============================================================
+      // 6. ОТРИСОВКА ПК
+      // ============================================================
+      function renderPCs(pcs) {
+        loadingPc.style.display = 'none';
+        const oldCards = pcListEl.querySelectorAll('.pc-card');
+        oldCards.forEach(el => el.remove());
+
+        if (!pcs || pcs.length === 0) {
+          pcListEl.innerHTML =
+            `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:40px 0;">Нет данных о ПК</div>`;
+          return;
+        }
+
+        pcs.forEach(pc => {
+          const card = document.createElement('div');
+          card.className = 'pc-card';
+          if (pc.status !== 'free') {
+            card.classList.add('disabled');
+          }
+          card.dataset.id = pc.id;
+
+          let statusText, statusClass;
+          if (pc.status === 'free') {
+            statusText = 'Свободен';
+            statusClass = 'status-free';
+          } else if (pc.status === 'busy') {
+            statusText = 'Занят';
+            statusClass = 'status-busy';
+          } else if (pc.status === 'booked') {
+            statusText = 'Забронирован';
+            statusClass = 'status-booked';
+          } else {
+            statusText = pc.status;
+            statusClass = '';
+          }
+
+          card.innerHTML = `
+            <div class="pc-number">ПК #${pc.id}</div>
+            <div class="pc-spec">${pc.spec || 'Стандартный'}</div>
+            <div class="pc-price">${pc.pricePerHour || 0} ₽/час</div>
+            <span class="pc-status ${statusClass}">${statusText}</span>
+          `;
+
+          if (pc.status === 'free') {
+            card.addEventListener('click', () => selectPC(pc.id));
+          }
+
+          pcListEl.appendChild(card);
+        });
+
+        // Если выбранный ПК стал занят – сбросить выбор
+        if (selectedPcId) {
+          const stillFree = pcs.find(p => p.id === selectedPcId && p.status === 'free');
+          if (!stillFree) {
+            selectedPcId = null;
+            selectedPcData = null;
+            selectedPcInfo.innerHTML = `<span style="color:var(--text-muted);">Выберите ПК из списка слева</span>`;
+            bookBtn.disabled = true;
+            document.querySelectorAll('.pc-card').forEach(c => c.classList.remove('selected'));
+          }
+        }
+      }
+
+      // ============================================================
+      // 7. ВЫБОР ПК
+      // ============================================================
+      function selectPC(pcId) {
+        const pcs = window._pcList || [];
+        const pc = pcs.find(p => p.id === pcId);
+        if (!pc || pc.status !== 'free') return;
+
+        selectedPcId = pcId;
+        selectedPcData = pc;
+        document.querySelectorAll('.pc-card').forEach(c => c.classList.remove('selected'));
+        const card = document.querySelector(`.pc-card[data-id="${pcId}"]`);
+        if (card) card.classList.add('selected');
+
+        selectedPcInfo.innerHTML = `
+          <strong>Выбран ПК #${pc.id}</strong> — ${pc.spec}, ${pc.pricePerHour} ₽/час
+        `;
+        bookBtn.disabled = false;
+        paymentModal.classList.remove('active');
+        successMsg.style.display = 'none';
+        totalPriceSpan.textContent = '0';
+        currentBookingId = null;
+      }
+
+      // ============================================================
+      // 8. ЗАГРУЗКА ДАННЫХ ПРИ СТАРТЕ
+      // ============================================================
+      async function loadData() {
+        const data = await fetchPcList();
+        if (data) {
+          window._pcList = data;
+          renderPCs(data);
+        } else {
+          loadingPc.style.display = 'none';
+          pcListEl.innerHTML =
+            `<div style="grid-column:1/-1;text-align:center;color:var(--accent);padding:40px 0;">Ошибка загрузки данных. Проверьте API.</div>`;
+        }
+      }
+
+      // ============================================================
+      // 9. СОЗДАНИЕ БРОНИ В LANGAME
+      // ============================================================
+      async function createBookingRequest(pcId, startTime, durationMinutes, name, phone) {
+        const payload = {
+          pcId: pcId,
+          startTime: startTime, // ISO 8601
+          duration: durationMinutes, // в минутах
+          customerName: name,
+          customerPhone: phone
+        };
+
+        const result = await callLangame(
+          LANGAME_CONFIG.endpoints.createBooking,
+          'POST',
+          payload
+        );
+        return result;
+      }
+
+      // ============================================================
+      // 10. ОБРАБОТЧИК КНОПКИ "ЗАБРОНИРОВАТЬ"
+      // ============================================================
+      bookBtn.addEventListener('click', async function() {
+        if (isBookingInProgress) return;
+        if (!selectedPcData) {
+          alert('Выберите ПК');
+          return;
+        }
+
+        const name = customerName.value.trim();
+        if (!name) {
+          alert('Введите ваше имя');
+          return;
+        }
+        const phone = customerPhone.value.trim();
+        if (!phone) {
+          alert('Введите телефон');
+          return;
+        }
+        const dateStr = bookingDatetime.value;
+        if (!dateStr) {
+          alert('Выберите дату и время');
+          return;
+        }
+        const durationHours = parseInt(bookingDuration.value);
+        if (isNaN(durationHours) || durationHours < 1) {
+          alert('Укажите корректную продолжительность (от 1 часа)');
+          return;
+        }
+
+        // Проверка даты (только сегодня/завтра)
+        const selectedDate = new Date(dateStr);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const maxDate = new Date(tomorrow);
+        maxDate.setHours(23, 59, 59);
+        if (selectedDate < today || selectedDate > maxDate) {
+          alert('Можно выбрать только сегодня или завтра');
+          return;
+        }
+
+        const durationMinutes = durationHours * 60;
+        const startTimeISO = new Date(dateStr).toISOString();
+
+        isBookingInProgress = true;
+        bookBtn.disabled = true;
+        bookBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создание...';
+
+        try {
+          const result = await createBookingRequest(
+            selectedPcData.id,
+            startTimeISO,
+            durationMinutes,
+            name,
+            phone
+          );
+
+          bookBtn.innerHTML = '<i class="fas fa-check"></i> Забронировать';
+          bookBtn.disabled = false;
+          isBookingInProgress = false;
+
+          if (result && result.bookingId) {
+            currentBookingId = result.bookingId;
+            const total = result.total || (selectedPcData.pricePerHour * durationHours);
+            totalPriceSpan.textContent = total;
+
+            // Если API вернул ссылку на оплату – перенаправляем
+            if (result.paymentUrl) {
+              window.location.href = result.paymentUrl;
+              return;
+            }
+
+            // Иначе показываем кнопку оплаты
+            paymentModal.classList.add('active');
+            successMsg.style.display = 'none';
+          } else {
+            alert('Ошибка создания брони: ' + (result.message || 'Неизвестная ошибка'));
+          }
+        } catch (error) {
+          bookBtn.innerHTML = '<i class="fas fa-check"></i> Забронировать';
+          bookBtn.disabled = false;
+          isBookingInProgress = false;
+          alert('Ошибка: ' + error.message);
+        }
+      });
+
+      // ============================================================
+      // 11. ОБРАБОТЧИК КНОПКИ "ОПЛАТИТЬ"
+      // ============================================================
+      payBtn.addEventListener('click', async function() {
+        if (!currentBookingId) {
+          alert('Бронь не найдена');
+          return;
+        }
+
+        payBtn.disabled = true;
+        payBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        try {
+          // Инициируем оплату через Langame (Finik)
+          const result = await callLangame(
+            LANGAME_CONFIG.endpoints.initPayment,
+            'POST',
+            { bookingId: currentBookingId }
+          );
+
+          if (result && result.paymentUrl) {
+            // Перенаправляем на страницу оплаты
+            window.location.href = result.paymentUrl;
+          } else {
+            // Если оплата уже прошла или ошибка
+            paymentModal.classList.remove('active');
+            successMsg.style.display = 'block';
+            payBtn.textContent = 'Оплачено';
+          }
+        } catch (error) {
+          alert('Ошибка оплаты: ' + error.message);
+        }
+
+        payBtn.disabled = false;
+        payBtn.innerHTML = '<i class="fas fa-credit-card"></i> Оплатить';
+      });
+
+      // ============================================================
+      // 12. АВТООБНОВЛЕНИЕ СПИСКА ПК (каждые 30 секунд)
+      // ============================================================
+      setInterval(loadData, 30000);
+
+      // ============================================================
+      // 13. ИНИЦИАЛИЗАЦИЯ
+      // ============================================================
+      setDateLimits();
+      loadData();
+
+      // ============================================================
+      // 14. НАВИГАЦИЯ (скролл, хамбургер)
+      // ============================================================
+      const navbar = document.getElementById('navbar');
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 80) navbar.classList.add('scrolled');
+        else navbar.classList.remove('scrolled');
+      });
+
+      const hamburger = document.getElementById('hamburger');
+      const mobileMenu = document.getElementById('mobileMenu');
+      hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        mobileMenu.classList.toggle('open');
+      });
+      mobileMenu.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          hamburger.classList.remove('active');
+          mobileMenu.classList.remove('open');
+        });
+      });
+
+    })();
+  </script>
+
+</body>
+</html>
